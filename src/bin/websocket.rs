@@ -8,7 +8,6 @@ use axum::{
     Router,
 };
 use std::net::SocketAddr;
-use tower_http::trace::{DefaultMakeSpan, TraceLayer};
 
 #[tokio::main]
 async fn main() {
@@ -18,14 +17,9 @@ async fn main() {
     chaiwala::logger::log_init();
 
     let app = Router::new()
-        .route("/", get(|| async { "Chaiwala!, Go to ws:/localhost:3000/ws, and send websocket there!" }))
+        .route("/", get(handle_http))
         //绑定websocket路由
-        .route("/ws", get(websocket_handler))
-        .layer(
-            TraceLayer::new_for_http()
-                .make_span_with(DefaultMakeSpan::default().include_headers(true)),
-        );
-
+        .route("/ws", get(handle_websocket));
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
     log::info!("listening on {}", addr);
     axum::Server::bind(&addr)
@@ -34,7 +28,11 @@ async fn main() {
         .unwrap();
 }
 
-async fn websocket_handler(
+async fn handle_http() -> &'static str {
+    "Hello, World!"
+}
+
+async fn handle_websocket(
     ws: WebSocketUpgrade,
     user_agent: Option<TypedHeader<headers::UserAgent>>,
 ) -> impl IntoResponse {
@@ -42,10 +40,10 @@ async fn websocket_handler(
         log::info!("Connected: {}", user_agent.as_str());
     }
 
-    ws.on_upgrade(handle_websocket)
+    ws.on_upgrade(handle_websocket_client)
 }
 
-async fn handle_websocket(mut socket: WebSocket) {
+async fn handle_websocket_client(mut socket: WebSocket) {
     loop {
         let res = socket.recv().await;
         if res.is_none() {
