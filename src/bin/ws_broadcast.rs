@@ -20,11 +20,15 @@ async fn handle_ws(
 
 /// Send number to the broadcast
 async fn generate_numbers(tx: broadcast::Sender<i32>) {
-    for i in 0..10 {
-        // Sending the number through the broadcast channel
+    let mut i = 0;
+    loop {
         tx.send(i).unwrap();
         // Simulate some delay before sending the next number
         tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+        i += 1;
+        if 10 == i {
+            i = 0;
+        }
     }
 }
 
