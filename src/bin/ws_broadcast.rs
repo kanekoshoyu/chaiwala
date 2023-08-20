@@ -1,25 +1,11 @@
-use axum::extract::ws::{Message, WebSocket, WebSocketUpgrade};
-use axum::Extension;
-use axum::Router;
+use axum::{Extension, Router, Server};
+use chaiwala::handler as chai_handler;
 use std::net::SocketAddr;
 use std::sync::Arc;
 use tokio::sync::{broadcast, Mutex};
 
-async fn handle_http() -> &'static str {
-    "Hello, World!"
-}
-
-/// Spawn number generator and websocket callback
-async fn handle_ws(
-    ws: WebSocketUpgrade,
-    rx: Extension<Arc<Mutex<broadcast::Receiver<i32>>>>,
-) -> impl axum::response::IntoResponse {
-    // callback upon reception
-    ws.on_upgrade(move |socket: WebSocket| ws_upgrade_callback(socket, rx.0))
-}
-
-/// Send number to the broadcast
-async fn generate_numbers(tx: broadcast::Sender<i32>) {
+/// broadcast numbers
+async fn broadcast_numbers(tx: broadcast::Sender<i32>) {
     let mut i = 0;
     loop {
         tx.send(i).unwrap();
@@ -32,16 +18,6 @@ async fn generate_numbers(tx: broadcast::Sender<i32>) {
     }
 }
 
-// Websocket Callback
-async fn ws_upgrade_callback(mut ws: WebSocket, rx: Arc<Mutex<broadcast::Receiver<i32>>>) {
-    // while websocket is on connection
-    while let Ok(number) = rx.lock().await.recv().await {
-        ws.send(Message::Text(format!("{number}"))).await.unwrap();
-    }
-    // sends Message::Close()
-    ws.close().await.unwrap();
-}
-
 #[tokio::main]
 async fn main() {
     if std::env::var_os("RUST_LOG").is_none() {
@@ -52,22 +28,29 @@ async fn main() {
     // Setup broadcast
     let (tx, rx) = broadcast::channel::<i32>(100);
 
-    let arc_rx = Arc::new(Mutex::new(rx));
+    // Spawn a global number broadcast
+    tokio::spawn(broadcast_numbers(tx));
 
-    // Clone the sender to pass it to the broadcast loop
-    tokio::spawn(generate_numbers(tx));
-
+    // router
     let app = Router::new()
         // HTTP
-        .route("/", axum::routing::get(handle_http))
+        .route("/", axum::routing::get(chai_handler::handle_http))
         // Websocket
-        .route("/ws", axum::routing::get(handle_ws))
-        // Adds extension
-        .layer(Extension(arc_rx));
+        .route(
+            "/broadcast",
+            axum::routing::get(chai_handler::handle_ws_broadcast),
+        )
+        .route(
+            "/pingpong",
+            axum::routing::get(chai_handler::handle_ws_pingpong),
+        )
+        // Adds extension for broadcast receiver
+        .layer(Extension(Arc::new(Mutex::new(rx))));
 
+    // address
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
     log::info!("listening on {}", addr);
-    axum::Server::bind(&addr)
+    Server::bind(&addr)
         .serve(app.into_make_service())
         .await
         .unwrap();
