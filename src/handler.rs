@@ -18,11 +18,13 @@ pub async fn handle_ws_broadcast(
 ) -> impl axum::response::IntoResponse {
     // callback upon reception
     log::info!("Connected: {}", user_agent.unwrap().as_str());
+
     ws.on_upgrade(move |socket: WebSocket| ws_upgrade_callback(socket, rx.0))
 }
 
 /// Websocket Callback that sends received data from broadcast
 async fn ws_upgrade_callback(mut ws: WebSocket, rx: Arc<Mutex<broadcast::Receiver<i32>>>) {
+    // TODO spawn both the broadcast loop and the receiver loop for real-time control
     // while websocket is on connection
     while let Ok(number) = rx.lock().await.recv().await {
         ws.send(Message::Text(format!("{number}"))).await.unwrap();
