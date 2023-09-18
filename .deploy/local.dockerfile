@@ -3,6 +3,7 @@
 
 # NOTE Run this from the project root directory
 # docker build . -t local-chaiwala -f ./.deploy/local.dockerfile
+# docker run -p 80:1080 local-chaiwala:latest
 
 # Use the official Rust image as the build environment
 FROM rust:1.71 as build-env
