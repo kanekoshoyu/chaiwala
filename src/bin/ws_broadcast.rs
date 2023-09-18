@@ -48,7 +48,7 @@ async fn main() {
         .layer(Extension(Arc::new(Mutex::new(rx))));
 
     // address
-    let addr = SocketAddr::from(([0, 0, 0, 0], 80));
+    let addr = SocketAddr::from(([0, 0, 0, 0], 1080));
     log::info!("listening on {}", addr);
     Server::bind(&addr)
         .serve(app.into_make_service())
