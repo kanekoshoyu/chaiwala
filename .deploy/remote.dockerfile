@@ -1,5 +1,5 @@
-# Use teh remote src to build binary and copy to docker image
-# For deployment purpose
+# Use the remote src to build binary and copy to docker image
+# For continuous deployment purpose
 
 # Rust 2021 latest image
 FROM rust:1.71

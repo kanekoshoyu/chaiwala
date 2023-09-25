@@ -3,7 +3,7 @@ name = "chaiwala"
 version = "0.1.2"
 edition = "2021"
 authors = ["Sho Kaneko <kanekoshoyu@gmail.com>"]
-description = "Endpoints for Kucoin Arbitrage ECS Deployment"
+description = "Service Layer for Kucoin Arbitrage, along with Continuous Deployment"
 repository = "https://github.com/kanekoshoyu/chaiwala"
 license = "MIT"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -12,6 +12,8 @@ license = "MIT"
 log = "0.4.8"
 fern = "0.6.2"
 chrono = "0.4"
+kucoin_arbitrage = "0.0.10"
+serenity = "0.11.6"
 tokio = { version = "1.29.1", features = ["full"] }
 tokio-tungstenite = "0.20"
 axum = { version = "0.6.19", features = ["ws", "headers"] }

@@ -1,5 +1,5 @@
 # Use the local src to build binary and copy to docker image
-# For debugging purpose
+# For local testing purpose
 
 # NOTE Run this from the project root directory
 # docker build . -t local-chaiwala -f ./.deploy/local.dockerfile
