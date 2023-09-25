@@ -14,10 +14,10 @@ WORKDIR /app
 RUN git clone https://github.com/kanekoshoyu/chaiwala.git
 
 # Build release
-RUN cd chaiwala && cargo build --bin ws_broadcast --release
+RUN cd chaiwala && cargo build --bin chaiwala_service --release
 
 # Open application endpoints
 EXPOSE 1080
 
 # Run the binary
-CMD ["./chaiwala/target/release/ws_broadcast"]
+CMD ["./chaiwala/target/release/chaiwala_service"]

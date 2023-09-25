@@ -34,7 +34,7 @@ WORKDIR /app
 EXPOSE 1080
 
 # Copy the binary from the build stage
-COPY --from=build-env /usr/src/target/release/ws_broadcast /app/
+COPY --from=build-env /usr/src/target/release/chaiwala_service /app/
 
 # Specify the command to run on container start
-CMD ["/app/ws_broadcast"]
+CMD ["/app/chaiwala_service"]
