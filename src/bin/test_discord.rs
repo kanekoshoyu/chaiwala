@@ -30,7 +30,7 @@ async fn main() {
     // Adjust intents as needed
     let intents = GatewayIntents::GUILD_MESSAGES | GatewayIntents::GUILDS; 
 
-    let mut client = Client::builder(&token, intents)
+    let mut client = Client::builder(token, intents)
         .event_handler(Handler)
         .framework(StandardFramework::new())
         .await
