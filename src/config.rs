@@ -1,18 +1,20 @@
+use kucoin_arbitrage::error::Error;
 use serde::Deserialize;
 use std::fs;
 
 #[derive(Deserialize, Debug)]
 pub struct Config {
-    pub kucoin: KuCoin,
+    pub kucoin: kucoin_arbitrage::config::KuCoin,
+    pub behaviour: kucoin_arbitrage::config::Behaviour,
     pub discord: Discord,
-    pub behaviour: Behaviour,
 }
-
-#[derive(Deserialize, Debug)]
-pub struct KuCoin {
-    pub api_key: String,
-    pub secret_key: String,
-    pub passphrase: String,
+impl Config {
+    pub fn core(self) -> kucoin_arbitrage::config::Config {
+        kucoin_arbitrage::config::Config {
+            kucoin: self.kucoin,
+            behaviour: self.behaviour,
+        }
+    }
 }
 
 #[derive(Deserialize, Debug)]
@@ -21,13 +23,7 @@ pub struct Discord {
     pub channel_id: u64,
 }
 
-#[derive(Deserialize, Debug)]
-pub struct Behaviour {
-    pub monitor_interval_sec: u32,
-    pub usd_cyclic_arbitrage: u32,
-}
-
-pub fn from_file(filename: &str) -> Config {
-    let toml_str = fs::read_to_string(filename).expect("Failed to read config.toml");
-    toml::from_str(&toml_str).unwrap()
+pub fn from_file(filename: &str) -> Result<Config, Error> {
+    let toml_str = fs::read_to_string(filename).map_err(Error::IoError)?;
+    toml::from_str(&toml_str).map_err(Error::TomlError)
 }

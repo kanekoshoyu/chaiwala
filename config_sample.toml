@@ -6,14 +6,15 @@ api_key = "YOUR_API_KEY_HERE"
 secret_key = "YOUR_SECRET_KEY_HERE"
 passphrase = "YOUR_PASSPHRASE_HERE"
 
+[behaviour]
+# Performance monitor interval in seconds
+monitor_interval_sec = 120
+# max amount of USD to use in a single cyclic arbitrage
+usd_cyclic_arbitrage = 100
+
 [discord]
 # Get token at Discord Developer Portal -> Settings -> Bot -> Build-A-Bot -> Token
 api_key = "YOUR_API_KEY_HERE"
 # Get channel ID by right clicking the channel and press "Copy Chanel ID"
 channel_id = 123456789012345678
 
-[behaviour]
-# Performance monitor interval in seconds
-monitor_interval_sec = 120
-# max amount of USD to use in a single cyclic arbitrage
-usd_cyclic_arbitrage = 100

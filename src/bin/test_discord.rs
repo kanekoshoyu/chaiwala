@@ -1,5 +1,4 @@
 // Discord bot sends hello world to the designated channel via HTTP
-use chaiwala::config;
 use serenity::async_trait;
 use serenity::model::channel::Message;
 use serenity::model::gateway::{GatewayIntents, Ready};
@@ -26,8 +25,8 @@ impl EventHandler for Bot {
 }
 
 #[tokio::main]
-async fn main() {
-    let config = config::from_file("config.toml");
+async fn main() -> Result<(), failure::Error> {
+    let config = chaiwala::config::from_file("config.toml")?;
     let discord_bot_token: String = config.discord.token;
 
     // specify intents
@@ -60,4 +59,5 @@ async fn main() {
     if let Err(why) = discord_bot_client.start().await {
         println!("Client error: {:?}", why);
     }
+    Ok(())
 }
