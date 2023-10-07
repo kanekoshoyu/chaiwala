@@ -1,4 +1,4 @@
-# Create a copy of config.toml.sample as config.toml in the same directory
+# Create a copy of config_sample.toml as config.toml in the same directory
 
 # Get API credentials from https://www.kucoin.com/ and paste below
 [kucoin]
