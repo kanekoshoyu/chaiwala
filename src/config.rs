@@ -17,7 +17,8 @@ pub struct KuCoin {
 
 #[derive(Deserialize, Debug)]
 pub struct Discord {
-    pub api_key: String,
+    pub token: String,
+    pub channel_id: u64,
 }
 
 #[derive(Deserialize, Debug)]

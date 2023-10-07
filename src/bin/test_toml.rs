@@ -1,4 +1,4 @@
-use chaiwala::config as config;
+use chaiwala::config;
 
 fn main() {
     let config = config::from_file("config.toml");

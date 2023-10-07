@@ -7,7 +7,10 @@ secret_key = "YOUR_SECRET_KEY_HERE"
 passphrase = "YOUR_PASSPHRASE_HERE"
 
 [discord]
+# Get token at Discord Developer Portal -> Settings -> Bot -> Build-A-Bot -> Token
 api_key = "YOUR_API_KEY_HERE"
+# Get channel ID by right clicking the channel and press "Copy Chanel ID"
+channel_id = 123456789012345678
 
 [behaviour]
 # Performance monitor interval in seconds
