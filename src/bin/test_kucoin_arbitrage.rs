@@ -33,14 +33,14 @@ async fn main() -> Result<(), failure::Error> {
     let chance_counter = Arc::new(Mutex::new(Counter::new("chance")));
     let order_counter = Arc::new(Mutex::new(Counter::new("order")));
 
-    // Credentials#
-    // TODO edit the credential to accomodate discord token
-    // or change to the use of toml files just to see if it gets easier in modularization
+    // Read Configs
     let config = chaiwala::config::from_file("config.toml")?;
     let core_config = config.core();
     let monitor_interval = core_config.behaviour.monitor_interval_sec;
     let budget = core_config.behaviour.usd_cyclic_arbitrage;
-    let api = Kucoin::new(KucoinEnv::Live, Some(core_config.kucoin_credentials()))?;
+
+    // Setup Kucoin API endpoints
+    let api: Kucoin = Kucoin::new(KucoinEnv::Live, Some(core_config.kucoin_credentials()))?;
     let url_public = api.clone().get_socket_endpoint(WSType::Public).await?;
     let url_private = api.clone().get_socket_endpoint(WSType::Private).await?;
     log::info!("Credentials setup");
@@ -72,7 +72,7 @@ async fn main() -> Result<(), failure::Error> {
     log::info!("Broadcast channels setup");
 
     // Creates local orderbook
-    let full_orderbook = Arc::new(Mutex::new(FullOrderbook::new()));
+    let orderbooks = Arc::new(Mutex::new(FullOrderbook::new()));
     log::info!("Local orderbook setup");
 
     // Infrastructure tasks
@@ -80,13 +80,13 @@ async fn main() -> Result<(), failure::Error> {
     tokio::spawn(task_sync_orderbook(
         rx_orderbook,
         tx_orderbook_best,
-        full_orderbook.clone(),
+        orderbooks.clone(),
         api_input_counter.clone(),
     ));
     tokio::spawn(task_pub_chance_all_taker_btc_usd(
         rx_orderbook_best,
         tx_chance,
-        full_orderbook.clone(),
+        orderbooks.clone(),
         hash_symbols,
         budget as f64,
         best_price_counter.clone(),
@@ -103,43 +103,9 @@ async fn main() -> Result<(), failure::Error> {
         order_counter.clone(),
     ));
 
-    // Extracts the names only
+    // Gather all the orderbooks concurrently
     let symbols: Vec<String> = symbol_infos.into_iter().map(|info| info.symbol).collect();
-
-    // TODO place below in broker
-    // Uses REST to obtain the initial orderbook before subscribing to websocket
-    let tasks: Vec<_> = symbols
-        .iter()
-        .map(|symbol| {
-            // clone variables per task before spawn
-            let api = api.clone();
-            let full_orderbook_2 = full_orderbook.clone();
-            let symbol = symbol.clone();
-
-            tokio::spawn(async move {
-                loop {
-                    // log::info!("Obtaining initial orderbook[{}] from REST", symbol);
-                    let res = api.get_orderbook(&symbol, OrderBookType::L100).await;
-                    if res.is_err() {
-                        log::warn!("orderbook[{}] did not respond, retry", &symbol);
-                        continue;
-                    }
-                    let res = res.unwrap().data;
-                    if res.is_none() {
-                        log::warn!("orderbook[{}] received none, retry", &symbol);
-                        continue;
-                    }
-                    let data = res.unwrap();
-                    // log::info!("Initial sequence {}:{}", &symbol, data.sequence);
-                    let mut x = full_orderbook_2.lock().await;
-                    x.insert(symbol.to_string(), data.to_internal());
-                    break;
-                }
-            })
-        })
-        .collect();
-    futures::future::join_all(tasks).await;
-    log::info!("Collected all the symbols");
+    gather_orderbook_with_rest(symbols, api.clone(), orderbooks).await;
 
     // TODO revert the flow, we should first setup the infrastructure, then setup the data flow
 
@@ -172,4 +138,43 @@ async fn main() -> Result<(), failure::Error> {
         monitor_interval as u64
     ));
     panic!("Program should not arrive here")
+}
+
+async fn gather_orderbook_with_rest(
+    symbols: Vec<String>,
+    api: Kucoin,
+    orderbooks: Arc<Mutex<FullOrderbook>>,
+) {
+    let tasks: Vec<_> = symbols
+        .iter()
+        .map(|symbol| {
+            // clone variables per task before spawn
+            let api = api.clone();
+            let orderbooks_refcopy = orderbooks.clone();
+            let symbol = symbol.clone();
+
+            tokio::spawn(async move {
+                loop {
+                    // log::info!("Obtaining initial orderbook[{}] from REST", symbol);
+                    let res = api.get_orderbook(&symbol, OrderBookType::L100).await;
+                    if res.is_err() {
+                        log::warn!("orderbook[{}] did not respond, retry", &symbol);
+                        continue;
+                    }
+                    let res = res.unwrap().data;
+                    if res.is_none() {
+                        log::warn!("orderbook[{}] received none, retry", &symbol);
+                        continue;
+                    }
+                    let data = res.unwrap();
+                    // log::info!("Initial sequence {}:{}", &symbol, data.sequence);
+                    let mut x = orderbooks_refcopy.lock().await;
+                    x.insert(symbol.to_string(), data.to_internal());
+                    break;
+                }
+            })
+        })
+        .collect();
+    futures::future::join_all(tasks).await;
+    log::info!("Collected all the symbols");
 }

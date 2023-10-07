@@ -13,9 +13,9 @@ async fn main() -> Result<(), failure::Error> {
     let (sender, receiver) = channel::<String>(256);
 
     tokio::spawn(chaiwala::report::discord::task_discord_bot(
+        receiver,
         discord_bot_token,
         channel_id,
-        receiver,
     ));
     let duration = Duration::from_secs(10);
 

@@ -7,7 +7,6 @@ use serenity::model::prelude::ChannelId;
 use serenity::prelude::*;
 use serenity::Client;
 use std::sync::Arc;
-use tokio::sync::broadcast::Receiver;
 
 // Bot configuration
 struct Bot;
@@ -28,9 +27,9 @@ impl EventHandler for Bot {
 }
 
 pub async fn task_discord_bot(
+    receiver: tokio::sync::broadcast::Receiver<String>,
     token: String,
     channel_id: u64,
-    receiver: Receiver<String>,
 ) -> Result<(), failure::Error> {
     println!("Initializing discord bot client");
 
@@ -59,7 +58,7 @@ pub async fn task_discord_bot(
 async fn channel_broadcast(
     channel_id: u64,
     http: Arc<Http>,
-    mut receiver: Receiver<String>,
+    mut receiver: tokio::sync::broadcast::Receiver<String>,
 ) -> Result<(), failure::Error> {
     let channel = ChannelId(channel_id);
     loop {
