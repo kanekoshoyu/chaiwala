@@ -1,42 +1,63 @@
+// Discord bot sends hello world to the designated channel via HTTP
 use serenity::async_trait;
-use serenity::client::{Client, Context, EventHandler};
 use serenity::model::channel::Message;
-use serenity::model::gateway::GatewayIntents;
-use serenity::framework::StandardFramework;
+use serenity::model::gateway::{GatewayIntents, Ready};
+use serenity::model::prelude::ChannelId;
+use serenity::prelude::*;
+use serenity::Client;
 
-struct Handler;
+// Bot configuration
+struct Bot;
 
 #[async_trait]
-impl EventHandler for Handler {
+impl EventHandler for Bot {
     async fn message(&self, ctx: Context, msg: Message) {
-        // Check if the message is from the desired channel
-        let channel_id = 1;
-        if msg.channel_id == channel_id {
-            // Check if the message content is "!hi" (or any other trigger you prefer)
-            if msg.content == "!hi" {
-                // Send the "hi" message
-                if let Err(why) = msg.channel_id.say(&ctx.http, "Hi!").await {
-                    println!("Error sending message: {:?}", why);
-                }
+        if msg.content == "!hello" {
+            if let Err(e) = msg.channel_id.say(&ctx.http, "world!").await {
+                println!("Error sending message: {:?}", e);
             }
         }
+    }
+
+    async fn ready(&self, _: Context, ready: Ready) {
+        println!("{} is connected!", ready.user.name);
     }
 }
 
 #[tokio::main]
-async fn main() {
-    let token = "YOUR_BOT_TOKEN_HERE";
+async fn main() -> Result<(), failure::Error> {
+    let config = chaiwala::config::from_file("config.toml")?;
+    let discord_bot_token: String = config.discord.token;
 
-    // Adjust intents as needed
-    let intents = GatewayIntents::GUILD_MESSAGES | GatewayIntents::GUILDS; 
+    // specify intents
+    let intents = GatewayIntents::GUILD_MESSAGES | GatewayIntents::MESSAGE_CONTENT;
 
-    let mut client = Client::builder(token, intents)
-        .event_handler(Handler)
-        .framework(StandardFramework::new())
+    // setup client http
+    let mut discord_bot_client = Client::builder(discord_bot_token, intents)
+        .event_handler(Bot)
         .await
         .expect("Error creating client");
+    let discord_bot_http = discord_bot_client.cache_and_http.http.clone();
 
-    if let Err(why) = client.start().await {
+    // assign your channel
+    let channel_id = ChannelId(config.discord.channel_id);
+
+    // say hello world to the channel
+    let msg = "Arbitrage bot has initialized!";
+    if let Err(e) = channel_id.say(&discord_bot_http, msg).await {
+        if let serenity::Error::Http(http_error) = e {
+            if http_error.status_code().unwrap() == 401 {
+                eprintln!("Error: Discord bot token is invalid or unauthorized.");
+            }
+        } else {
+            eprintln!("Error sending message: {:?}", e);
+        }
+    }
+
+    // start is a blocking function that does not stop.
+    // spawn for actual use
+    if let Err(why) = discord_bot_client.start().await {
         println!("Client error: {:?}", why);
     }
+    Ok(())
 }

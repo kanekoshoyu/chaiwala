@@ -1,3 +1,6 @@
+# build target
 target
-config.ini
+# config
+config.toml
+# debug log
 *.log
