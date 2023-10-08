@@ -15,6 +15,17 @@ As of now, Kucoin API has the lowest latency at AWS east japan, which suggests d
 - System warning report via Discord Bot
 - Remote request process via REST 
 - Arbitrage broadcast via WebSocket
+  
+| Feature                                      | API         | Status    |
+| -------------------------------------------- | ----------- | --------- |
+| System warning report                        | Discord bot | Available |
+| Arbitrage performance report via Discord bot | Discord bot | Pending   |
+| Release build                                | Docker      | Pending   |
+| Continuous deployment to AWS                 | Docker      | Pending   |
+| Remote request process                       | REST        | Pending   |
+| Process management                           | REST        | Pending   |
+| Arbitrage broadcast                          | WebSocket   | Pending   |
+
 
 ### Discord Server
-[Join my discord ](https://discord.com/invite/uHbX7nSQ)
+[Join my Discord](https://discord.gg/q3j5MYdwnm)
