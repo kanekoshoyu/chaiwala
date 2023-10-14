@@ -10,20 +10,14 @@ Having the perfect algorithm and software architecture is not enough for algo-tr
 As of now, Kucoin API has the lowest latency at AWS east japan, which suggests deployment over ECS or similar services using docker. To facilitate the effective remote debug reports and performance reports, this repo was set up to experiment hosting a webserver in event-driven async rust.
 
 ### Features to be Included
-- Continuous deployment to AWS using GitHub CI/Docker
-- Arbitrage performance report via Discord Bot
-- System warning report via Discord Bot
-- Remote request process via REST 
-- Arbitrage broadcast via WebSocket
-  
 | Feature                                      | API         | Status    |
 | -------------------------------------------- | ----------- | --------- |
 | System warning report                        | Discord bot | Available |
-| Arbitrage performance report via Discord bot | Discord bot | Pending   |
+| Arbitrage performance report via Discord bot | Discord bot | Available |
 | Release build                                | Docker      | Pending   |
-| Continuous deployment to AWS                 | Docker      | Pending   |
-| Remote request process                       | REST        | Pending   |
-| Process management                           | REST        | Pending   |
+| AWS Continuous Deployment                    | Docker      | Pending   |
+| Remote request process                       | REST        | Available |
+| Process management                           | REST        | Available |
 | Arbitrage broadcast                          | WebSocket   | Pending   |
 
 
