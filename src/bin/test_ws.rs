@@ -34,15 +34,15 @@ async fn main() {
     // router
     let app = Router::new()
         // HTTP
-        .route("/", axum::routing::get(chai_handler::handle_http))
+        .route("/", axum::routing::get(chai_handler::http::plain_hello_world))
         // Websocket
         .route(
             "/broadcast",
-            axum::routing::get(chai_handler::handle_ws_broadcast),
+            axum::routing::get(chai_handler::ws::handler_broadcast),
         )
         .route(
             "/pingpong",
-            axum::routing::get(chai_handler::handle_ws_pingpong),
+            axum::routing::get(chai_handler::ws::handler_ping_pong),
         )
         // Adds extension for broadcast receiver
         .layer(Extension(Arc::new(Mutex::new(rx))));

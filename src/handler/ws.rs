@@ -4,37 +4,26 @@ use axum::Extension;
 use std::sync::Arc;
 use tokio::sync::{broadcast, Mutex};
 
-/// HTTP handler, returns plain text
-pub async fn handle_http(user_agent: Option<TypedHeader<headers::UserAgent>>) -> &'static str {
-    log::info!("Connected: {}", user_agent.unwrap().as_str());
-    "Hello, World!"
-}
-
 /// WebSocket handler, returns response from callback
-pub async fn handle_ws_broadcast(
+pub async fn handler_broadcast(
     ws: WebSocketUpgrade,
     user_agent: Option<TypedHeader<headers::UserAgent>>,
     rx: Extension<Arc<Mutex<broadcast::Receiver<i32>>>>,
 ) -> impl axum::response::IntoResponse {
-    // callback upon reception
     log::info!("Connected: {}", user_agent.unwrap().as_str());
-
-    ws.on_upgrade(move |socket: WebSocket| ws_upgrade_callback(socket, rx.0))
+    ws.on_upgrade(move |socket: WebSocket| publish_index(socket, rx.0))
 }
 
 /// Websocket Callback that sends received data from broadcast
-async fn ws_upgrade_callback(mut ws: WebSocket, rx: Arc<Mutex<broadcast::Receiver<i32>>>) {
-    // TODO spawn both the broadcast loop and the receiver loop for real-time control
-    // while websocket is on connection
+async fn publish_index(mut ws: WebSocket, rx: Arc<Mutex<broadcast::Receiver<i32>>>) {
     while let Ok(number) = rx.lock().await.recv().await {
         ws.send(Message::Text(format!("{number}"))).await.unwrap();
     }
-    // sends Message::Close()
     ws.close().await.unwrap();
 }
 
 /// WebSocket handler, returns response from callback
-pub async fn handle_ws_pingpong(
+pub async fn handler_ping_pong(
     ws: WebSocketUpgrade,
     user_agent: Option<TypedHeader<headers::UserAgent>>,
 ) -> impl axum::response::IntoResponse {
@@ -42,11 +31,11 @@ pub async fn handle_ws_pingpong(
         log::info!("Connected: {}", user_agent.as_str());
     }
 
-    ws.on_upgrade(ws_callback_pingpong)
+    ws.on_upgrade(pub_received)
 }
 
 /// Websocket Callback that sends received data
-async fn ws_callback_pingpong(mut socket: WebSocket) {
+async fn pub_received(mut socket: WebSocket) {
     loop {
         let res = socket.recv().await;
         if res.is_none() {

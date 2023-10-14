@@ -2,7 +2,7 @@ use kucoin_arbitrage::error::Error;
 use serde::Deserialize;
 use std::fs;
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Config {
     pub kucoin: kucoin_arbitrage::config::KuCoin,
     pub behaviour: kucoin_arbitrage::config::Behaviour,
@@ -17,7 +17,7 @@ impl Config {
     }
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Discord {
     pub token: String,
     pub channel_id: u64,
