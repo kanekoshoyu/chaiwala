@@ -1,6 +1,6 @@
 [package]
 name = "chaiwala"
-version = "0.1.4"
+version = "0.1.5"
 edition = "2021"
 authors = ["Sho Kaneko <kanekoshoyu@gmail.com>"]
 description = "Service Layer for Kucoin Arbitrage, along with Continuous Deployment"

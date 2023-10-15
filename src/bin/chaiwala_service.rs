@@ -41,7 +41,7 @@ async fn main() -> Result<(), failure::Error> {
 
     // setup http server
     let msg = tokio::select! {
-        res = task_signal_handle() => format!("received external signal ({res:?})"),
+        _ = task_signal_handle() => format!("received external signal"),
         res = core_runtime(config.clone(), tx_discord_message, rx_runtime_status) => format!("core ended ({res:?})"),
         res = service(config, rx_discord_message, tx_runtime_status) => format!("service ended ({res:?})"),
     };
@@ -58,7 +58,6 @@ async fn service(
 
     let mut taskpool_service = tokio::task::JoinSet::new();
 
-    // TODO setup http server here
     taskpool_service.spawn(task_discord_bot(
         rx_discord_message,
         discord_bot_token,
@@ -87,20 +86,18 @@ async fn core_runtime(
     tx_discord_message: Sender<String>,
     rx_runtime_status: Receiver<event::RuntimeStatus>,
 ) -> Result<(), failure::Error> {
-    // TODO discord message sender to be used by chaiwala's custom core::taskpool_infrastructure::task_log_mps
     loop {
         received_runtime_status(
             rx_runtime_status.resubscribe(),
             event::RuntimeStatus::Running,
         )
         .await?;
-        // change status as start
         let message: String = tokio::select! {
             _ = core(config.clone().core(), tx_discord_message.clone()) => String::from("unexpected end of core"),
             res = received_runtime_status(rx_runtime_status.resubscribe(), event::RuntimeStatus::Idle) =>format!("signal[{:?}]", res)
 
         };
-        // change status as stop
+        log::info!("Runtime set to Idle [{message}]");
     }
 }
 async fn core(
