@@ -1,6 +1,6 @@
 [package]
 name = "chaiwala"
-version = "0.1.4"
+version = "0.1.5"
 edition = "2021"
 authors = ["Sho Kaneko <kanekoshoyu@gmail.com>"]
 description = "Service Layer for Kucoin Arbitrage, along with Continuous Deployment"
@@ -9,26 +9,33 @@ license = "MIT"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+# core
 kucoin_api = "1.4.10"
-kucoin_arbitrage = "0.0.11"
-log = "0.4.8"
-failure = "0.1.8"
+kucoin_arbitrage = "0.0.13"
+# async
+futures = "0.3.28"
+futures-util = { version = "0.3.28", default-features = false, features = [
+    "sink",
+    "std",
+] }
+tokio = { version = "1.33.0", features = ["full"] }
+tokio-tungstenite = "0.20.1"
+# log
+log = "0.4.20"
 fern = "0.6.2"
-chrono = "0.4"
+chrono = "0.4.31"
+# config
+toml = "0.8.2"
+serde = "1.0.189"
+# debug
+failure = "0.1.8"
+# discord
 serenity = { version = "0.11.6", default-features = false, features = [
     "client",
     "gateway",
     "rustls_backend",
     "model",
 ] }
-serde = "1.0.188"
-toml = "0.8.2"
-tokio = { version = "1.29.1", features = ["full"] }
-tokio-tungstenite = "0.20"
-axum = { version = "0.6.19", features = ["ws", "headers"] }
-futures = "0.3"
-futures-util = { version = "0.3", default-features = false, features = [
-    "sink",
-    "std",
-] }
-headers = "0.3"
+# servers
+axum = { version = "0.6.20", features = ["ws", "headers", "macros"] }
+headers = "0.3.9"
