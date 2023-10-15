@@ -12,12 +12,12 @@ Perfect algorithms and software architectures are not enough for algo-trading. A
 kucoin_arbitrage's monitor mod is modified as report mod in chaiwala, which sends the MPS counter report to Discord channel in real time.  
 
 ### Core Runtime Management via REST
-set core's runtime status using GET command i.e.
-Enable: http://localhost:1080/set?status=Running
+set core's runtime status using GET command i.e.  
+Enable: http://localhost:1080/set?status=Running  
 Disable: http://localhost:1080/set?status=Idle  
 
 ### Docker
-Build docker image locally: `docker build . -t local-chaiwala -f ./.deploy/local.dockerfile`
+Build docker image locally: `docker build . -t local-chaiwala -f ./.deploy/local.dockerfile`  
 Run local docker image: `docker run -p 80:1080 local-chaiwala:latest`
 
 ## Features to be Included
