@@ -34,7 +34,10 @@ async fn main() {
     // router
     let app = Router::new()
         // HTTP
-        .route("/", axum::routing::get(chai_handler::http::plain_hello_world))
+        .route(
+            "/",
+            axum::routing::get(chai_handler::http::plain_hello_world),
+        )
         // Websocket
         .route(
             "/broadcast",

@@ -25,11 +25,15 @@ pub async fn handler_set_status(
     Query(param): Query<SetStatusParam>,
     tx: Extension<Arc<Mutex<broadcast::Sender<event::RuntimeStatus>>>>,
 ) -> Response<Body> {
-    let msg = format!("received command to set status as [{:?}]", param.status);
+    let msg = format!(
+        "Received REST command to set runtime status as [{:?}]",
+        param.status
+    );
     // Add your code to restart your service here.
     let tx = tx.lock().await;
-    let res = tx.send(param.status);
-    log::info!("set status {res:?}");
+    if tx.send(param.status).is_err() {
+        log::warn!("problem publishing runtime status, check receiver side")
+    }
     log::info!("{msg}");
     Response::new(Body::from(msg))
 }

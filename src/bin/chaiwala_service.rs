@@ -1,6 +1,8 @@
 /// Executes triangular arbitrage, as a service
+use chaiwala::event;
 use chaiwala::report::counter::task_log_mps;
 use chaiwala::report::discord::task_discord_bot;
+use chaiwala::webserver::task_api_router;
 use kucoin_api::client::{Kucoin, KucoinEnv};
 use kucoin_arbitrage::broker::gatekeeper::kucoin::task_gatekeep_chances;
 use kucoin_arbitrage::broker::order::kucoin::task_place_order;
@@ -35,7 +37,7 @@ async fn main() -> Result<(), failure::Error> {
 
     // channels
     let (tx_discord_message, rx_discord_message) = channel::<String>(256);
-    let (tx_runtime_status, rx_runtime_status) = channel::<RuntimeStatus>(5);
+    let (tx_runtime_status, rx_runtime_status) = channel::<event::RuntimeStatus>(5);
 
     // setup http server
     let msg = tokio::select! {
@@ -49,7 +51,7 @@ async fn main() -> Result<(), failure::Error> {
 async fn service(
     config: chaiwala::config::Config,
     rx_discord_message: Receiver<String>,
-    tx_runtime_status: Sender<RuntimeStatus>,
+    tx_runtime_status: Sender<event::RuntimeStatus>,
 ) -> Result<(), failure::Error> {
     let discord_bot_token: String = config.discord.token.clone();
     let discord_channel_id: u64 = config.discord.channel_id;
@@ -62,18 +64,13 @@ async fn service(
         discord_bot_token,
         discord_channel_id,
     ));
+    taskpool_service.spawn(task_api_router(tx_runtime_status));
     taskpool_service.join_next().await.unwrap()?
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Copy)]
-enum RuntimeStatus {
-    Running,
-    Idle,
-}
-
 async fn received_runtime_status(
-    mut rx_runtime_status: Receiver<RuntimeStatus>,
-    status: RuntimeStatus,
+    mut rx_runtime_status: Receiver<event::RuntimeStatus>,
+    status: event::RuntimeStatus,
 ) -> Result<(), failure::Error> {
     loop {
         if let Ok(res) = rx_runtime_status.recv().await {
@@ -88,15 +85,19 @@ async fn received_runtime_status(
 async fn core_runtime(
     config: chaiwala::config::Config,
     tx_discord_message: Sender<String>,
-    rx_runtime_status: Receiver<RuntimeStatus>,
+    rx_runtime_status: Receiver<event::RuntimeStatus>,
 ) -> Result<(), failure::Error> {
     // TODO discord message sender to be used by chaiwala's custom core::taskpool_infrastructure::task_log_mps
     loop {
-        received_runtime_status(rx_runtime_status.resubscribe(), RuntimeStatus::Running).await?;
+        received_runtime_status(
+            rx_runtime_status.resubscribe(),
+            event::RuntimeStatus::Running,
+        )
+        .await?;
         // change status as start
         let message: String = tokio::select! {
             _ = core(config.clone().core(), tx_discord_message.clone()) => String::from("unexpected end of core"),
-            res = received_runtime_status(rx_runtime_status.resubscribe(), RuntimeStatus::Idle) =>format!("signal[{:?}]", res)
+            res = received_runtime_status(rx_runtime_status.resubscribe(), event::RuntimeStatus::Idle) =>format!("signal[{:?}]", res)
 
         };
         // change status as stop

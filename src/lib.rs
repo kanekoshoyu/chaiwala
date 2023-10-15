@@ -1,12 +1,12 @@
-/// Logger intialization
-pub mod logger;
-/// Handlers
-pub mod handler;
-/// server
-pub mod webserver;
 /// Config
 pub mod config;
-/// Report
-pub mod report;
 /// Event
 pub mod event;
+/// Handlers
+pub mod handler;
+/// Logger intialization
+pub mod logger;
+/// Report
+pub mod report;
+/// server
+pub mod webserver;

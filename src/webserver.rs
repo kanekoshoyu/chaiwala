@@ -8,7 +8,9 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 use tokio::sync::{broadcast, Mutex};
 
-pub async fn task_api_router(tx_status: broadcast::Sender<event::RuntimeStatus>) -> Result<(), failure::Error> {
+pub async fn task_api_router(
+    tx_status: broadcast::Sender<event::RuntimeStatus>,
+) -> Result<(), failure::Error> {
     // mutex since handlers gets spawned
     let tx_cmd_ref = Arc::new(Mutex::new(tx_status));
     let app = Router::new()
