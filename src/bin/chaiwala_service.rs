@@ -88,6 +88,7 @@ async fn core_runtime(
     tx_discord_message: Sender<String>,
 ) -> Result<(), failure::Error> {
     loop {
+        log::info!("waiting for start command");
         received_runtime_status(
             rx_runtime_status.resubscribe(),
             event::RuntimeStatus::Running,
@@ -183,6 +184,18 @@ async fn core(
         tx_orderbook_best.subscribe(),
         cx_orderbook_best.clone(),
     ));
+    taskpool_monitor.spawn(task_monitor_channel_mps(
+        tx_chance.subscribe(),
+        cx_chance.clone(),
+    ));
+    taskpool_monitor.spawn(task_monitor_channel_mps(
+        tx_order.subscribe(),
+        cx_order.clone(),
+    ));
+    taskpool_monitor.spawn(task_monitor_channel_mps(
+        tx_orderchange.subscribe(),
+        cx_orderchange.clone(),
+    ));
     taskpool_monitor.spawn(task_log_mps(
         tx_discord_message,
         vec![
@@ -221,7 +234,7 @@ async fn core(
             format!("Monitor task pool error [{res:?}]"),
         res = taskpool_subscription.join_next() => format!("Subscription task pool error [{res:?}]"),
     };
-    Err(failure::err_msg(format!("unexpected error [{message}]")))
+    Err(failure::err_msg(message))
 }
 
 /// wait for any external terminating signal

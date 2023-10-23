@@ -19,11 +19,11 @@ async fn broadcast_numbers(tx: broadcast::Sender<i32>) {
 }
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<(), failure::Error> {
     if std::env::var_os("RUST_LOG").is_none() {
         std::env::set_var("RUST_LOG", "example_websockets=debug,tower_http=debug")
     }
-    chaiwala::logger::log_init();
+    chaiwala::logger::log_init()?;
 
     // Setup broadcast
     let (tx, rx) = broadcast::channel::<i32>(100);
@@ -57,4 +57,5 @@ async fn main() {
         .serve(app.into_make_service())
         .await
         .unwrap();
+    Ok(())
 }

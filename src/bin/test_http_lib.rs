@@ -5,7 +5,7 @@ use tokio::sync::broadcast;
 #[tokio::main]
 async fn main() -> Result<(), failure::Error> {
     // logging format
-    kucoin_arbitrage::logger::log_init();
+    kucoin_arbitrage::logger::log_init()?;
     log::info!("Log setup");
 
     // build our application with a single route
