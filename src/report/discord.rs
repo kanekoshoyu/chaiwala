@@ -16,13 +16,13 @@ impl EventHandler for Bot {
     async fn message(&self, ctx: Context, msg: Message) {
         if msg.content == "!hello" {
             if let Err(e) = msg.channel_id.say(&ctx.http, "world!").await {
-                println!("Error sending message: {:?}", e);
+                log::error!("Error sending message: {:?}", e);
             }
         }
     }
 
     async fn ready(&self, _: Context, ready: Ready) {
-        println!("[{}] discord bot client is connected", ready.user.name);
+        log::info!("[{}] discord bot client is connected", ready.user.name);
     }
 }
 
@@ -31,7 +31,7 @@ pub async fn task_discord_bot(
     token: String,
     channel_id: u64,
 ) -> Result<(), failure::Error> {
-    println!("Initializing discord bot client");
+    log::info!("Initializing discord bot client");
 
     // specify intents
     let intents = GatewayIntents::GUILD_MESSAGES | GatewayIntents::MESSAGE_CONTENT;
@@ -42,17 +42,13 @@ pub async fn task_discord_bot(
         .await
         .expect("Error creating client");
     let discord_bot_http = discord_bot_client.cache_and_http.http.clone();
+    log::info!("running bot client start()");
 
-    // assign your channel
-
-    // TODO fix below
-    println!("spawned channe_broadcast()");
-    // do not await below
-    tokio::spawn(channel_broadcast(channel_id, discord_bot_http, receiver));
-    println!("running bot client start()");
-    discord_bot_client.start().await.unwrap();
-    println!("should not arrive here!");
-    Ok(())
+    let task_ended = tokio::select! {
+        _ = channel_broadcast(channel_id, discord_bot_http, receiver) => "discord_channel_broadcast",
+        _ = discord_bot_client.start() => "discord_bot_client"
+    };
+    Err(failure::err_msg(format!("[{task_ended}] ended early.")))
 }
 
 async fn channel_broadcast(
@@ -66,10 +62,10 @@ async fn channel_broadcast(
         if let Err(e) = channel.say(&http, received_string).await {
             if let serenity::Error::Http(http_error) = e {
                 if http_error.status_code().unwrap() == 401 {
-                    eprintln!("Error: Discord bot token is invalid or unauthorized.");
+                    log::error!("Error: Discord bot token is invalid or unauthorized.");
                 }
             } else {
-                eprintln!("Error sending message: {:?}", e);
+                log::error!("Error sending message: {:?}", e);
             }
         }
     }

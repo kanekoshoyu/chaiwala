@@ -285,6 +285,7 @@ version = "0.1.5"
 dependencies = [
  "axum",
  "chrono",
+ "colored",
  "failure",
  "fern",
  "futures 0.3.28",
@@ -321,6 +322,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ddfc5b9aa5d4507acaf872de71051dfd0e309860e88966e1051e462a077aac4f"
 dependencies = [
  "bitflags 1.3.2",
+]
+
+[[package]]
+name = "colored"
+version = "2.0.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2674ec482fbc38012cf31e6c42ba0177b431a0cb6f15fe40efa5aab1bda516f6"
+dependencies = [
+ "is-terminal",
+ "lazy_static",
+ "windows-sys",
 ]
 
 [[package]]
@@ -1007,9 +1019,9 @@ dependencies = [
 
 [[package]]
 name = "kucoin_arbitrage"
-version = "0.0.13"
+version = "0.0.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "088ce5b0ef07868fc8ab8320c0e885428fd827eaf75add7718fdb99b05032cb1"
+checksum = "d5ce68785414c122dfeed3bc74d7dc52bb21756285e03b02332d0f1290965ff6"
 dependencies = [
  "chrono",
  "env_logger",

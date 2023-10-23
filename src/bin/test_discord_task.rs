@@ -7,6 +7,9 @@ use tokio::time::{sleep, Duration};
 
 #[tokio::main]
 async fn main() -> Result<(), failure::Error> {
+    kucoin_arbitrage::logger::log_init();
+    log::info!("Log setup");
+
     let config: chaiwala::config::Config = chaiwala::config::from_file("config.toml")?;
     let discord_bot_token: String = config.discord.token;
     let channel_id: u64 = config.discord.channel_id;

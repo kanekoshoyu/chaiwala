@@ -11,7 +11,7 @@ license = "MIT"
 [dependencies]
 # core
 kucoin_api = "1.4.10"
-kucoin_arbitrage = "0.0.13"
+kucoin_arbitrage = "0.0.14"
 # async
 futures = "0.3.28"
 futures-util = { version = "0.3.28", default-features = false, features = [
