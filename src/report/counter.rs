@@ -13,7 +13,7 @@ async fn log_mps(
 ) -> Result<(), kucoin_api::failure::Error> {
     let title = String::from("Broadcast channel data rate");
     log::info!("{title}");
-    tx_message.send(title)?;
+    let mut discord_message = format!("{title}\n");
     for counter in counters.iter() {
         let (name, count) = {
             let p = counter.lock().await;
@@ -21,10 +21,11 @@ async fn log_mps(
         };
         let message = format!("{name:10}: {count:5} points ({:5}mps)", count / interval);
         log::info!("{message}");
-        tx_message.send(message)?;
+        discord_message += &format!("{message}\n");
         // clear the data
         counter::reset(counter.clone()).await;
     }
+    tx_message.send(discord_message)?;
     Ok(())
 }
 /// log counters as a task

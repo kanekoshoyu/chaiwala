@@ -14,8 +14,9 @@ struct Bot;
 #[async_trait]
 impl EventHandler for Bot {
     async fn message(&self, ctx: Context, msg: Message) {
-        if msg.content == "!hello" {
-            if let Err(e) = msg.channel_id.say(&ctx.http, "world!").await {
+        if msg.content.to_lowercase().contains("hi") || msg.content.to_lowercase().contains("hello")
+        {
+            if let Err(e) = msg.channel_id.say(&ctx.http, "hello world!").await {
                 log::error!("Error sending message: {:?}", e);
             }
         }
