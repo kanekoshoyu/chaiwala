@@ -2,6 +2,10 @@ use chrono::prelude::Local;
 use colored::Colorize;
 use fern;
 
+// TODO find a way to obtain the running binary name for
+// - terminal log whitelisting
+// - console log filename 
+
 fn dispatch_console() -> fern::Dispatch {
     fern::Dispatch::new()
         .level(log::LevelFilter::Info)
